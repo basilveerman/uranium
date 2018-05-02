@@ -31,6 +31,8 @@ except:
     from StringIO import StringIO
 
 LOGGER = logging.getLogger(__name__)
+BIN_DIR = 'bin' if not sys.platform == 'win32' else 'Scripts'
+BIN_SUFFIX = '.exe' if sys.platform == 'win32' else ''
 
 
 class PassThroughOptionParser(OptionParser):
@@ -170,17 +172,18 @@ def _install_virtualenv(install_dir):
         site_py_file = _get_site_file_path(install_dir)
         _inject_to_site_py(site_py_file)
     finally:
+        os.chdir(install_dir)
         shutil.rmtree(temp_dir)
 
 
 def _get_site_file_path(venv_directory):
-    executable = os.path.join(venv_directory, 'bin', 'python')
+    executable = os.path.join(venv_directory, BIN_DIR, 'python')
     return subprocess.Popen(
         [executable, "-c", "import site; print(site.__file__)"],
         stdout=subprocess.PIPE
     # we strip the last character 'c' in case it's a .pyc file
     # want the .py
-    ).communicate()[0].decode('utf-8').rstrip('c\n')
+    ).communicate()[0].decode('utf-8').rstrip().rstrip('c')
 
 
 def _inject_to_site_py(site_py_file):
@@ -207,7 +210,7 @@ def _install_uranium(virtualenv_dir, uranium_dir=None, version=None):
         uranium_dir = os.path.expanduser(uranium_dir)
 
     log_file = os.path.join(virtualenv_dir, 'uranium_install_log.txt')
-    pip_executable = os.path.join(virtualenv_dir, 'bin', 'pip')
+    pip_executable = os.path.join(virtualenv_dir, BIN_DIR, 'pip' + BIN_SUFFIX)
     uranium_name = uranium_dir or 'uranium'
 
     if version and not uranium_dir:
@@ -217,7 +220,7 @@ def _install_uranium(virtualenv_dir, uranium_dir=None, version=None):
         # we specify the python path explicitely, because
         # in some cases, a long absolute path will not be properly
         # executable.
-        python = os.path.join(virtualenv_dir, 'bin', 'python')
+        python = os.path.join(virtualenv_dir, BIN_DIR, 'python' + BIN_SUFFIX)
         status = subprocess.call([python, pip_executable, 'install', uranium_name,
                                   '--upgrade'], stdout=fh, stderr=fh)
         if status:
@@ -229,8 +232,10 @@ def _install_uranium(virtualenv_dir, uranium_dir=None, version=None):
 
 
 def _run_uranium(virtualenv_dir, args):
-    python = os.path.join(virtualenv_dir, 'bin', 'python')
-    uranium_executable = os.path.join(virtualenv_dir, 'bin', 'uranium')
+    python = os.path.join(virtualenv_dir, BIN_DIR, 'python' + BIN_SUFFIX)
+    uranium_executable = os.path.join(virtualenv_dir, BIN_DIR, 'uranium' + BIN_SUFFIX)
+    LOGGER.debug('python: %s', python)
+    LOGGER.debug('uranium: %s', uranium_executable)
     os.execl(python, python, *([uranium_executable] + args))
     return subprocess.call([python, uranium_executable] + args,
                            stdin=sys.stdin,
