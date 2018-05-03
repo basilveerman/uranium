@@ -4,6 +4,8 @@ import pkg_resources
 
 from pip._vendor import pkg_resources as pip_pkg_resources
 
+from ..platform import BIN_DIR
+
 
 def activate_virtualenv(root):
     """ this will activate a virtualenv in the case one exists """
@@ -15,7 +17,7 @@ def activate_virtualenv(root):
     site_package_dirs = ["site-packages"]
     sys.path = [p for p in sys.path if "site-packages" not in p]
 
-    activate_this_path = os.path.join(root, 'bin', 'activate_this.py')
+    activate_this_path = os.path.join(root, BIN_DIR, 'activate_this.py')
     with open(activate_this_path) as fh:
         l = {"__file__": activate_this_path}
         bytecode = compile(fh.read(), activate_this_path, "exec")
@@ -29,7 +31,7 @@ def activate_virtualenv(root):
 
     # we modify the executable directly
     # because pip invokes this to install packages.
-    sys.executable = os.path.join(root, 'bin', 'python')
+    sys.executable = os.path.join(root, BIN_DIR, 'python')
 
     for _pkg_resources in [pkg_resources, pip_pkg_resources]:
         for site_package_dir in site_package_dirs:

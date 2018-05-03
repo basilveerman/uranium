@@ -201,7 +201,7 @@ sys.path += paths_to_append
 
 
 def _install_uranium(virtualenv_dir, uranium_dir=None, version=None):
-    uranium_executable = os.path.join(virtualenv_dir, 'bin', 'uranium')
+    uranium_executable = os.path.join(virtualenv_dir, BIN_DIR, 'uranium')
     if os.path.exists(uranium_executable):
         return
 

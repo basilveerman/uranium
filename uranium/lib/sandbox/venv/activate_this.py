@@ -3,6 +3,8 @@ import re
 import subprocess
 import os
 
+from ..platform import BIN_DIR, BIN_SUFFIX
+
 BASE = os.path.dirname(os.path.abspath(__file__))
 LIB_DIR = os.path.dirname(os.path.dirname(os.path.dirname(BASE)))
 LOGGER = logging.getLogger(__name__)
@@ -38,7 +40,7 @@ def write_activate_this(venv_root, additional_content=None):
         content = fh.read() + "\n"
         content += (additional_content or "")
 
-    activate_this_file = os.path.join(venv_root, "bin", "activate_this.py")
+    activate_this_file = os.path.join(venv_root, BIN_DIR, "activate_this.py")
     with open(activate_this_file, "w+") as fh:
         fh.write(content)
 
@@ -49,7 +51,7 @@ def inject_sitepy(venv_root):
 
 
 def _get_site_file_path(venv_directory):
-    executable = os.path.join(venv_directory, 'bin', 'python')
+    executable = os.path.join(venv_directory, BIN_DIR, 'python' + BIN_SUFFIX)
     return subprocess.Popen(
         [executable, "-c", "import site; print(site.__file__)"],
         stdout=subprocess.PIPE
